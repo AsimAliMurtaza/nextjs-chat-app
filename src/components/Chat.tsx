@@ -4,12 +4,10 @@ import { useEffect, useState, useRef } from "react";
 import {
   Box,
   Input,
-  Button,
   VStack,
   Text,
   HStack,
   Avatar,
-  Flex,
   IconButton,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -17,14 +15,16 @@ import { useSession } from "next-auth/react";
 import { FaPaperPlane } from "react-icons/fa";
 import { motion } from "framer-motion";
 
+const MotionBox = motion(Box);
+const MotionInput = motion(Input);
+const MotionButton = motion(IconButton);
+
 interface Message {
   sender: string;
   receiver: string;
   message: string;
   timestamp: string;
 }
-
-const MotionBox = motion(Box);
 
 const Chat = ({
   recipient,
@@ -35,7 +35,18 @@ const Chat = ({
   recipientName: string;
   recipientAvatar?: string;
 }) => {
-  const { data: session } = useSession();
+  interface CustomSessionUser {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
+
+  interface CustomSession {
+    user?: CustomSessionUser;
+  }
+
+  const { data: session } = useSession() as { data: CustomSession | null };
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
   const [ws, setWs] = useState<WebSocket | null>(null);
@@ -43,10 +54,10 @@ const Chat = ({
 
   const userId = session?.user?.id as string | undefined;
 
-  const bgColor = useColorModeValue("gray.100", "gray.900");
-  const chatBg = useColorModeValue("white", "gray.800");
+  const bgColor = useColorModeValue("white", "black");
+  const chatBg = useColorModeValue("gray.100", "black");
   const messageBg = useColorModeValue("blue.500", "blue.400");
-  const receivedBg = useColorModeValue("gray.300", "gray.700");
+  const receivedBg = useColorModeValue("gray.700", "gray.600");
 
   useEffect(() => {
     if (!userId || !recipient) return;
@@ -131,21 +142,31 @@ const Chat = ({
   };
 
   return (
-    <Box
+    <MotionBox
       display="flex"
       flexDirection="column"
       h="100vh"
-      w="100%"
+      w="auto"
       bg={bgColor}
       color={useColorModeValue("gray.800", "white")}
-      borderRadius="lg"
       overflow="hidden"
       shadow="lg"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
     >
       {/* Chat Header */}
-      <HStack bg={chatBg} p={4} borderBottomWidth={1} shadow="sm" spacing={4}>
+      <HStack
+        bg={chatBg}
+        p={4}
+        shadow="sm"
+        spacing={4}
+        as={motion.div}
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
         <Avatar name={recipientName} src={recipientAvatar} />
-        <Text fontWeight="bold" fontSize="lg">
+        <Text fontWeight="normal" fontSize="xl">
           {recipientName}
         </Text>
       </HStack>
@@ -179,10 +200,12 @@ const Chat = ({
               px={4}
               py={2}
               borderRadius="lg"
-              shadow="md"
+              shadow="sm"
             >
-              <Text fontSize="sm">{msg.message}</Text>
-              <Text fontSize="xs" textAlign="right" opacity={0.7}>
+              <Text fontSize="sm" fontWeight="thin">
+                {msg.message}
+              </Text>
+              <Text fontSize="xs" textAlign="right" opacity={0.5}>
                 {new Date(msg.timestamp).toLocaleTimeString()}
               </Text>
             </Box>
@@ -192,26 +215,34 @@ const Chat = ({
       </VStack>
 
       {/* Chat Input */}
-      <Box bg={chatBg} p={4} borderTopWidth={1} shadow="sm">
+      <Box bg={chatBg} p={4} shadow="sm">
         <HStack>
-          <Input
+          <MotionInput
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            bg={useColorModeValue("gray.200", "gray.700")}
+            placeholder="Message"
+            bg={useColorModeValue("gray.200", "whiteAlpha.100")}
             borderRadius="full"
-            _focus={{ borderColor: "blue.500", bg: useColorModeValue("white", "gray.600") }}
+            _focus={{
+              bg: useColorModeValue("white", "whiteAlpha.100"),
+            }}
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            whileFocus={{ scale: 1.02 }}
           />
-          <IconButton
+          <MotionButton
             aria-label="Send message"
             icon={<FaPaperPlane />}
-            colorScheme="blue"
+            colorScheme="green"
             borderRadius="full"
             onClick={sendMessage}
+            whileHover={{ scale: 1.1, rotate: 10 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ duration: 0.2 }}
           />
         </HStack>
       </Box>
-    </Box>
+    </MotionBox>
   );
 };
 

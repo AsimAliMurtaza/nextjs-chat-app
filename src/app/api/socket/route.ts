@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { WebSocketServer, WebSocket } from "ws";
+import * as http from "http";
 
 const wss = new WebSocketServer({ noServer: true });
 const clients = new Map<string, WebSocket>(); // Store connected clients
@@ -9,17 +10,25 @@ export async function GET(req: NextRequest) {
     return new Response("WebSocket Upgrade Required", { status: 426 });
   }
 
-  const { socket } = (req as any).headers.get("upgrade");
+  const upgradeHeader = req.headers.get("upgrade");
 
-  if (socket) {
-    wss.handleUpgrade(req, socket, Buffer.alloc(0), (ws) => {
-      wss.emit("connection", ws, req);
+  if (upgradeHeader) {
+    const { socket, head } = (req as any).headers.get("upgrade");
+    const incomingMessage = new http.IncomingMessage(socket);
+    incomingMessage.url = req.nextUrl.toString();
+    incomingMessage.headers = Object.fromEntries(req.headers.entries());
+
+    wss.handleUpgrade(incomingMessage, socket, Buffer.alloc(0), (ws) => {
+      wss.emit("connection", ws, incomingMessage);
     });
   }
 
   wss.on("connection", (ws, req) => {
-    const userId = new URL(req.url!, `http://${req.headers.host}`).searchParams.get("userId");
-    
+    const userId = new URL(
+      req.url!,
+      `http://${req.headers.host}`
+    ).searchParams.get("userId");
+
     if (userId) {
       clients.set(userId, ws);
     }

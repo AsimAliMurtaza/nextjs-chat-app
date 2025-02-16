@@ -13,6 +13,8 @@ export async function POST(req: NextRequest) {
   const { contactEmail } = await req.json();
   if (!contactEmail) return NextResponse.json({ error: "Email is required" }, { status: 400 });
 
+  if (!session.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const user = await User.findOne({ email: session.user.email });
     const contact = await User.findOne({ email: contactEmail });

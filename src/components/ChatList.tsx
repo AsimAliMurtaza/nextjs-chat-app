@@ -28,10 +28,12 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaBars, FaSignOutAlt, FaMoon, FaSun, FaPlus } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Motion Wrapper for Smooth Animations
 const MotionBox = motion(Box);
+const MotionButton = motion(Button);
+const MotionIconButton = motion(IconButton);
 
 interface User {
   _id: string;
@@ -48,24 +50,26 @@ export default function ChatList() {
   const toast = useToast();
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  
+
   const [contacts, setContacts] = useState<User[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [newContact, setNewContact] = useState("");
 
   // Theme-aware colors
-  const bgColor = useColorModeValue("gray.100", "gray.900");
-  const cardBg = useColorModeValue("white", "gray.800");
+  const bgColor = useColorModeValue("white", "black");
+  const cardBg = useColorModeValue("white", "black");
   const textColor = useColorModeValue("gray.800", "gray.100");
-  const highlightBg = useColorModeValue("blue.500", "blue.700");
-  const borderColor = useColorModeValue("gray.300", "gray.600");
+  const highlightBg = useColorModeValue("gray.100", "blue.700");
+  const borderColor = useColorModeValue("gray.100", "gray.600");
 
   // Fetch Contacts
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
       fetch("/api/contacts")
         .then((res) => res.json())
-        .then((data) => setContacts(data.filter((user) => user && user._id)))
+        .then((data) =>
+          setContacts(data.filter((user: User) => user && user._id))
+        )
         .catch((err) => console.error("Error fetching contacts:", err));
     }
   }, [status, session]);
@@ -131,46 +135,126 @@ export default function ChatList() {
 
   return (
     <MotionBox
-      w={sidebarOpen ? "280px" : "80px"}
+      as={motion.div}
+      animate={{ width: sidebarOpen ? "240px" : "50px" }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
       minH="100vh"
       bg={bgColor}
       color={textColor}
-      borderRight="1px solid"
       borderColor={borderColor}
       overflow="hidden"
       display="flex"
       flexDirection="column"
     >
       {/* ✅ Sidebar Header */}
-      <Flex justify="space-between" align="center" p={4}>
-        {sidebarOpen && (
-          <Text
-            fontSize="xl"
-            fontWeight="bold"
-            bgGradient="linear(to-r, blue.400, purple.400)"
-            bgClip="text"
-          >
-            ChatSphere
-          </Text>
-        )}
-        <IconButton
+      <Flex justify="space-between" align="center" p={2}>
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Text
+                fontSize="xl"
+                fontWeight="bold"
+                bgGradient="linear(to-r, blue.400, purple.400)"
+                bgClip="text"
+              >
+                ChatSphere
+              </Text>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <MotionIconButton
           icon={<FaBars />}
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-label="Toggle Sidebar"
           variant="ghost"
-          fontSize="lg"
+          fontSize="md"
+          borderRadius="full"
+          animate={{ rotate: sidebarOpen ? 0 : 180 }}
+          transition={{ duration: 0.3 }}
         />
       </Flex>
 
-      {/* ✅ Sidebar Contacts Section */}
+      {/* ✅ Contact List */}
+      <VStack spacing={0} align="stretch" flex="1">
+        {contacts.map((user) => (
+          <Tooltip
+            label={user.username}
+            placement="right"
+            hasArrow
+            isDisabled={sidebarOpen}
+            key={user._id}
+          >
+            <MotionBox
+              p={sidebarOpen ? 2 : 2}
+              bg={pathname === `/chat/${user._id}` ? highlightBg : cardBg}
+              cursor="pointer"
+              whileHover={{ scale: 1.01 }}
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              onClick={() =>
+                router.push(
+                  `/chat/${user._id}?name=${encodeURIComponent(user.username)}`
+                )
+              }
+              w="full"
+            >
+              <HStack spacing={3} w="full">
+                <Avatar
+                  name={user.username}
+                  src={user.avatar || ""}
+                  size={sidebarOpen ? "md" : "sm"}
+                />
+                <Collapse
+                  in={sidebarOpen}
+                  animateOpacity
+                  style={{ width: "100%" }}
+                >
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="lg" fontWeight="normal">
+                      {user.username}
+                    </Text>
+                    {user.isOnline && (
+                      <Text fontSize="xs" color="green.400">
+                        Online
+                      </Text>
+                    )}
+                  </HStack>
+                </Collapse>
+              </HStack>
+            </MotionBox>
+          </Tooltip>
+        ))}
+      </VStack>
+
+      {/* ✅ Add Contact Button */}
       <Collapse in={sidebarOpen} animateOpacity>
-        <HStack bg="gray.800" p={3} borderRadius="md" mx={2} mb={2}>
-          <Button leftIcon={<FaPlus />} size="sm" colorScheme="blue" onClick={onOpen}>
+        <HStack
+          p={3}
+          display="flex"
+          justifyContent="right"
+          borderRadius="md"
+          mx={2}
+          mb={2}
+        >
+          <MotionButton
+            leftIcon={<FaPlus />}
+            size="sm"
+            onClick={onOpen}
+            variant="outline"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
             Add Contact
-          </Button>
+          </MotionButton>
         </HStack>
       </Collapse>
-
       {/* ✅ Modal for Adding Contact */}
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
@@ -198,44 +282,28 @@ export default function ChatList() {
         </ModalContent>
       </Modal>
 
-      {/* ✅ Contact List */}
-      <VStack spacing={1} align="stretch" flex="1" overflowY="auto">
-        {contacts.map((user) => (
-          <Tooltip label={user.username} placement="right" hasArrow isDisabled={sidebarOpen} key={user._id}>
-            <MotionBox
-              p={sidebarOpen ? 4 : 2}
-              bg={pathname === `/chat/${user._id}` ? highlightBg : cardBg}
-              cursor="pointer"
-              borderRadius="lg"
-              border="1px solid"
-              borderColor={borderColor}
-              boxShadow="md"
-              whileHover={{ scale: 1.02 }}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              onClick={() => router.push(`/chat/${user._id}?name=${encodeURIComponent(user.username)}`)}
-            >
-              <HStack spacing={3} w="full">
-                <Avatar name={user.username} src={user.avatar || ""} size={sidebarOpen ? "md" : "sm"} />
-                <Collapse in={sidebarOpen} animateOpacity>
-                  <Box>
-                    <HStack justify="space-between">
-                      <Text fontWeight="bold">{user.username}</Text>
-                      {user.isOnline && <Text fontSize="xs" color="green.400">Online</Text>}
-                    </HStack>
-                  </Box>
-                </Collapse>
-              </HStack>
-            </MotionBox>
-          </Tooltip>
-        ))}
-      </VStack>
-
       {/* ✅ Bottom Actions */}
-      <Flex justify="space-between" p={4} borderTop="1px solid" borderColor={borderColor}>
-        <IconButton icon={colorMode === "light" ? <FaMoon /> : <FaSun />} onClick={toggleColorMode} aria-label="Toggle Theme" variant="ghost" />
-        {sidebarOpen && <Button leftIcon={<FaSignOutAlt />} size="sm" colorScheme="red" onClick={() => signOut()}>Logout</Button>}
+      <Flex
+        justify="space-between"
+        p={2}
+      >
+        <MotionIconButton
+          icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
+          onClick={toggleColorMode}
+          aria-label="Toggle Theme"
+          variant="ghost"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        />
+        {sidebarOpen && (
+          <MotionButton
+            leftIcon={<FaSignOutAlt />}
+            size="sm"
+            onClick={() => signOut()}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          />
+        )}
       </Flex>
     </MotionBox>
   );
