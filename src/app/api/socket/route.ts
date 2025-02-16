@@ -1,23 +1,42 @@
-import { NextResponse } from "next/server";
-import { Server, WebSocketServer, WebSocket } from "ws";
+import { NextRequest } from "next/server";
+import { WebSocketServer, WebSocket } from "ws";
 
-let wss: Server | null = null;
-let clients: Set<WebSocket> = new Set();
+const wss = new WebSocketServer({ noServer: true });
+const clients = new Map<string, WebSocket>(); // Store connected clients
 
-export async function GET() {
-  if (!wss) {
-    wss = new WebSocketServer({ noServer: true });
-    wss.on("connection", (ws) => {
-      clients.add(ws);
-      ws.on("message", (message) => {
-        clients.forEach((client) => {
-          if (client !== ws && client.readyState === ws.OPEN) {
-            client.send(message);
-          }
-        });
-      });
-      ws.on("close", () => clients.delete(ws));
+export async function GET(req: NextRequest) {
+  if (!req.nextUrl.searchParams.has("upgrade")) {
+    return new Response("WebSocket Upgrade Required", { status: 426 });
+  }
+
+  const { socket } = (req as any).headers.get("upgrade");
+
+  if (socket) {
+    wss.handleUpgrade(req, socket, Buffer.alloc(0), (ws) => {
+      wss.emit("connection", ws, req);
     });
   }
-  return NextResponse.json({ message: "WebSocket server running" });
+
+  wss.on("connection", (ws, req) => {
+    const userId = new URL(req.url!, `http://${req.headers.host}`).searchParams.get("userId");
+    
+    if (userId) {
+      clients.set(userId, ws);
+    }
+
+    ws.on("message", (data) => {
+      const messageData = JSON.parse(data.toString());
+
+      const recipientSocket = clients.get(messageData.receiver);
+      if (recipientSocket) {
+        recipientSocket.send(JSON.stringify(messageData));
+      }
+    });
+
+    ws.on("close", () => {
+      if (userId) clients.delete(userId);
+    });
+  });
+
+  return new Response(null, { status: 101 });
 }

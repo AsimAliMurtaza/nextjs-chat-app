@@ -1,78 +1,134 @@
 "use client";
-
 import { useEffect, useState } from "react";
+import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
 
-export default function Chat() {
+interface Message {
+  sender: string;
+  receiver: string;
+  message: string; // ✅ Ensure field matches MongoDB schema
+  timestamp: string; // ✅ Added timestamp for sorting if needed
+}
+
+const Chat = ({ recipient }: { recipient: string }) => {
+  const { data: session } = useSession();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
   const [ws, setWs] = useState<WebSocket | null>(null);
-  const [username, setUsername] = useState("");
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<{ username: string; message: string }[]>([]);
 
+  // ✅ Fetch chat history when user switches
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:3000/api/socket");
+    if (!session?.user?.id || !recipient) return;
+
+    console.log("Fetching chat history for:", session.user.id, "and", recipient);
+
+    fetch(`/api/messages?user1=${session.user.id}&user2=${recipient}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Fetched chat history:", data); // ✅ Log response for debugging
+        setMessages(data); // ✅ Set messages from DB
+      })
+      .catch((err) => console.error("Error fetching chat history:", err));
+
+    // ✅ Set up WebSocket for real-time messages
+    const socket = new WebSocket(
+      `ws://localhost:3001?userId=${session.user.id}`
+    );
 
     socket.onmessage = (event) => {
-      const receivedMessage = JSON.parse(event.data);
-      setMessages((prev) => [...prev, receivedMessage]);
+      try {
+        const receivedMessage: Message = JSON.parse(event.data);
+        if (
+          (receivedMessage.sender === session.user.id &&
+            receivedMessage.receiver === recipient) ||
+          (receivedMessage.sender === recipient &&
+            receivedMessage.receiver === session.user.id)
+        ) {
+          setMessages((prev) => [...prev, receivedMessage]); // ✅ Append only new messages
+        }
+      } catch (err) {
+        console.error("WebSocket message parsing error:", err);
+      }
     };
 
+    socket.onerror = (error) => console.error("WebSocket Error:", error);
+    socket.onclose = () => console.log("WebSocket closed.");
+    
     setWs(socket);
-    return () => socket.close();
-  }, []);
+
+    return () => {
+      socket.close();
+    };
+  }, [recipient, session?.user?.id]);
 
   const sendMessage = async () => {
-    if (!ws || !username || !message) return;
+    if (!newMessage.trim()) return;
+    if (!session?.user?.id) {
+      console.error("User is not authenticated.");
+      return;
+    }
 
-    const newMessage = { username, message };
-    ws.send(JSON.stringify(newMessage));
+    const message: Message = {
+      sender: session.user.id,
+      receiver: recipient,
+      message: newMessage,
+      timestamp: new Date().toISOString(), // ✅ Ensure timestamp consistency
+    };
 
-    await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newMessage),
-    });
+    // Optimistically update UI
+    setMessages((prev) => [...prev, message]);
+    setNewMessage("");
 
-    setMessage("");
+    // Send message via WebSocket
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(message));
+    } else {
+      console.error("WebSocket is not open.");
+    }
+
+    // Save message via API
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        body: JSON.stringify(message),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        console.error("Failed to send message:", await res.json());
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
-      <div className="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold text-center mb-4">Real-time Chat</h2>
-        {!username ? (
-          <div className="flex flex-col">
-            <input
-              type="text"
-              className="p-2 rounded bg-gray-700 text-white mb-2"
-              placeholder="Enter username"
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-        ) : (
-          <>
-            <div className="h-64 overflow-y-auto bg-gray-700 p-4 rounded">
-              {messages.map((msg, index) => (
-                <p key={index}>
-                  <strong>{msg.username}: </strong>
-                  {msg.message}
-                </p>
-              ))}
-            </div>
-            <div className="flex mt-4">
-              <input
-                type="text"
-                className="flex-grow p-2 rounded bg-gray-700 text-white"
-                placeholder="Type a message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              />
-              <button onClick={sendMessage} className="ml-2 px-4 py-2 bg-blue-500 rounded">
-                Send
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+    <VStack spacing={3} align="stretch">
+      <Box
+        p={3}
+        border="1px solid gray"
+        borderRadius="md"
+        h="400px"
+        overflowY="scroll"
+      >
+        {messages.map((msg, i) => (
+          <Text
+            key={i}
+            align={msg.sender === session?.user?.id ? "right" : "left"}
+          >
+            <b>{msg.sender === session?.user?.id ? "You" : recipient}:</b>{" "}
+            {msg.message}
+          </Text>
+        ))}
+      </Box>
+      <Input
+        value={newMessage}
+        onChange={(e) => setNewMessage(e.target.value)}
+        placeholder="Type a message..."
+      />
+      <Button onClick={sendMessage}>Send</Button>
+    </VStack>
   );
-}
+};
+
+export default Chat;
