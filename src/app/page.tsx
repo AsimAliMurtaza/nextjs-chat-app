@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession, signOut } from "next-auth/react";
-import { useRouter, usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
   Box,
-  VStack,
-  HStack,
-  Avatar,
-  Text,
-  Button,
   Flex,
+  Text,
   Spinner,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -27,33 +23,60 @@ interface User {
 export default function HomePage() {
   const { data: session, status } = useSession();
   const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const bgColor = useColorModeValue("gray.50", "black");
-  const cardBg = useColorModeValue("white", "black");
-  const textColor = useColorModeValue("gray.800", "gray.100");
-  const highlightBg = useColorModeValue("gray.100", "blue.700");
-  const borderColor = useColorModeValue("gray.100", "gray.600");
   const router = useRouter();
-  const pathname = usePathname(); // Get current route
 
+  // Fetch users after authentication
   useEffect(() => {
     if (status === "authenticated") {
       fetch("/api/users")
         .then((res) => res.json())
-        .then(setUsers);
+        .then((data) => {
+          setUsers(data);
+          setTimeout(() => setIsLoading(false), 500); // Smooth transition delay
+        });
     }
   }, [status]);
 
-  if (status === "loading") {
-    return <Spinner size="xl" />;
-  }
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!session && status !== "loading") {
+      router.push("/login");
+    }
+  }, [session, status, router]);
 
-  if (!session) {
-    router.push("/login");
-    return null;
+  // **Loading Screen with Windows 10-Style Spinner**
+  if (isLoading || status === "loading") {
+    return (
+      <Flex
+        h="100vh"
+        align="center"
+        justify="center"
+        bg={useColorModeValue("white", "black")}
+        flexDirection="column"
+        transition="opacity 0.3s ease-in-out"
+      >
+        <Text fontSize="md" mb={3} color="gray.500">
+          Loading your chats...
+        </Text>
+        <Spinner
+          thickness="4px"
+          speed="0.8s"
+          emptyColor="gray.200"
+          color="green.500"
+          size="xl"
+        />
+      </Flex>
+    );
   }
 
   return (
-    <Flex h="100vh">
+    <Flex
+      h="100vh"
+      opacity={isLoading ? 0 : 1}
+      transition="opacity 0.3s ease-in-out"
+    >
       {/* Sidebar - Chat List */}
       <Box w={{ base: "100%", md: "auto" }} maxW="300px">
         <ChatList />

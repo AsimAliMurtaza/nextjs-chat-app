@@ -60,8 +60,8 @@ const Chat = ({
 
   const userId = session?.user?.id as string | undefined;
 
-  const bgColor = useColorModeValue("white", "gray.900");
-  const chatBg = useColorModeValue("gray.100", "gray.800");
+  const bgColor = useColorModeValue("white", "black");
+  const chatBg = useColorModeValue("gray.100", "black");
   const messageBg = useColorModeValue("blue.500", "blue.400");
   const receivedBg = useColorModeValue("gray.700", "gray.600");
 
