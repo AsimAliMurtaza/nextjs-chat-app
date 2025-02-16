@@ -162,7 +162,7 @@ export default function ChatList() {
                 bgGradient="linear(to-r, blue.400, purple.400)"
                 bgClip="text"
               >
-                ChatSphere
+                NotWhatsApp
               </Text>
             </motion.div>
           )}

@@ -10,10 +10,12 @@ import {
   Avatar,
   IconButton,
   useColorModeValue,
+  Image,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-import { FaPaperPlane } from "react-icons/fa";
+import { FaPaperclip, FaPaperPlane, FaSmile } from "react-icons/fa";
 import { motion } from "framer-motion";
+import EmojiPicker from "emoji-picker-react"; // Emoji picker library
 
 const MotionBox = motion(Box);
 const MotionInput = motion(Input);
@@ -24,6 +26,8 @@ interface Message {
   receiver: string;
   message: string;
   timestamp: string;
+  file?: string; // Base64 file
+  fileType?: string; // "image", "video", "document"
 }
 
 const Chat = ({
@@ -51,11 +55,13 @@ const Chat = ({
   const [newMessage, setNewMessage] = useState<string>("");
   const [ws, setWs] = useState<WebSocket | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false); // Emoji picker state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const userId = session?.user?.id as string | undefined;
 
-  const bgColor = useColorModeValue("white", "black");
-  const chatBg = useColorModeValue("gray.100", "black");
+  const bgColor = useColorModeValue("white", "gray.900");
+  const chatBg = useColorModeValue("gray.100", "gray.800");
   const messageBg = useColorModeValue("blue.500", "blue.400");
   const receivedBg = useColorModeValue("gray.700", "gray.600");
 
@@ -106,17 +112,35 @@ const Chat = ({
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !userId) return;
+    if ((!newMessage.trim() && !selectedFile) || !userId) return;
+
+    let fileBase64 = "";
+    let fileType = "";
+
+    if (selectedFile) {
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedFile);
+      await new Promise((resolve) => {
+        reader.onload = () => {
+          fileBase64 = reader.result as string;
+          fileType = selectedFile.type.split("/")[0]; // image, video, application
+          resolve(true);
+        };
+      });
+    }
 
     const message: Message = {
       sender: userId,
       receiver: recipient,
       message: newMessage,
       timestamp: new Date().toISOString(),
+      file: fileBase64 || undefined,
+      fileType: fileBase64 ? fileType : undefined,
     };
 
     setMessages((prev) => [...prev, message]);
     setNewMessage("");
+    setSelectedFile(null);
     scrollToBottom();
 
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -141,6 +165,16 @@ const Chat = ({
     }
   };
 
+  const addEmoji = (emojiObject: { emoji: string }) => {
+    setNewMessage((prev) => prev + emojiObject.emoji);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+    }
+  };
+
   return (
     <MotionBox
       display="flex"
@@ -156,15 +190,7 @@ const Chat = ({
       transition={{ duration: 0.5 }}
     >
       {/* Chat Header */}
-      <HStack
-        bg={chatBg}
-        p={4}
-        shadow="sm"
-        spacing={4}
-        as={motion.div}
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
+      <HStack bg={chatBg} p={4} shadow="sm" spacing={4}>
         <Avatar name={recipientName} src={recipientAvatar} />
         <Text fontWeight="normal" fontSize="xl">
           {recipientName}
@@ -172,26 +198,10 @@ const Chat = ({
       </HStack>
 
       {/* Messages */}
-      <VStack
-        flex="1"
-        spacing={4}
-        p={4}
-        overflowY="auto"
-        align="stretch"
-        css={{
-          "&::-webkit-scrollbar": { width: "6px" },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "rgba(0, 0, 0, 0.3)",
-            borderRadius: "10px",
-          },
-        }}
-      >
+      <VStack flex="1" spacing={4} p={4} overflowY="auto" align="stretch">
         {messages.map((msg, i) => (
           <MotionBox
             key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
             alignSelf={msg.sender === userId ? "flex-end" : "flex-start"}
           >
             <Box
@@ -200,13 +210,24 @@ const Chat = ({
               px={4}
               py={2}
               borderRadius="lg"
-              shadow="sm"
             >
-              <Text fontSize="sm" fontWeight="thin">
-                {msg.message}
-              </Text>
-              <Text fontSize="xs" textAlign="right" opacity={0.5}>
-                {new Date(msg.timestamp).toLocaleTimeString()}
+              {msg.file && msg.fileType === "image" && (
+                <Image
+                  src={msg.file}
+                  alt="Sent image"
+                  maxW="200px"
+                  borderRadius="md"
+                />
+              )}
+              {msg.file && msg.fileType === "video" && (
+                <video src={msg.file} controls width="200px" />
+              )}
+              <Text fontSize="sm">{msg.message}</Text>
+              <Text fontSize="xs" textAlign="right" opacity={0.7}>
+                {new Date(msg.timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </Text>
             </Box>
           </MotionBox>
@@ -214,31 +235,41 @@ const Chat = ({
         <div ref={chatContainerRef} />
       </VStack>
 
-      {/* Chat Input */}
-      <Box bg={chatBg} p={4} shadow="sm">
+      {/* Chat Input & Emoji Picker */}
+      <Box bg={chatBg} p={4} shadow="sm" position="relative">
+        {showEmojiPicker && (
+          <Box position="absolute" bottom="60px" left="10px" zIndex="10">
+            <EmojiPicker onEmojiClick={addEmoji} />
+          </Box>
+        )}
         <HStack>
+          <IconButton
+            icon={<FaSmile />}
+            aria-label="Emoji Picker"
+            onClick={() => setShowEmojiPicker((prev) => !prev)}
+          />
+          <input
+            type="file"
+            style={{ display: "none" }}
+            id="file-upload"
+            onChange={handleFileChange}
+          />
+          <IconButton
+            icon={<FaPaperclip />}
+            aria-label="Attach File"
+            onClick={() => document.getElementById("file-upload")?.click()}
+          />
           <MotionInput
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Message"
-            bg={useColorModeValue("gray.200", "whiteAlpha.100")}
             borderRadius="full"
-            _focus={{
-              bg: useColorModeValue("white", "whiteAlpha.100"),
-            }}
-            initial={{ scale: 0.95 }}
-            animate={{ scale: 1 }}
-            whileFocus={{ scale: 1.02 }}
           />
           <MotionButton
-            aria-label="Send message"
             icon={<FaPaperPlane />}
             colorScheme="green"
             borderRadius="full"
             onClick={sendMessage}
-            whileHover={{ scale: 1.1, rotate: 10 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ duration: 0.2 }}
           />
         </HStack>
       </Box>
