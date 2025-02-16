@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/libs/mongodb";
 import User from "@/models/user";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   await dbConnect();
-  const users = await User.find({}, "_id username email"); // Fetch only necessary fields
-  return NextResponse.json(users);
+  try {
+    const users = await User.find({}, "name email avatar _id");
+    return NextResponse.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }

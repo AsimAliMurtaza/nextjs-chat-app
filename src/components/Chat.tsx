@@ -11,10 +11,11 @@ import {
   Avatar,
   Flex,
   IconButton,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { FaPaperPlane } from "react-icons/fa";
-import user from "@/models/user";
+import { motion } from "framer-motion";
 
 interface Message {
   sender: string;
@@ -23,7 +24,17 @@ interface Message {
   timestamp: string;
 }
 
-const Chat = ({ recipient, recipientAvatar }: { recipient: string, recipientAvatar?: string }) => {
+const MotionBox = motion(Box);
+
+const Chat = ({
+  recipient,
+  recipientName,
+  recipientAvatar,
+}: {
+  recipient: string;
+  recipientName: string;
+  recipientAvatar?: string;
+}) => {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
@@ -32,7 +43,11 @@ const Chat = ({ recipient, recipientAvatar }: { recipient: string, recipientAvat
 
   const userId = session?.user?.id as string | undefined;
 
-  // ✅ Fetch chat history when user switches
+  const bgColor = useColorModeValue("gray.100", "gray.900");
+  const chatBg = useColorModeValue("white", "gray.800");
+  const messageBg = useColorModeValue("blue.500", "blue.400");
+  const receivedBg = useColorModeValue("gray.300", "gray.700");
+
   useEffect(() => {
     if (!userId || !recipient) return;
 
@@ -44,15 +59,16 @@ const Chat = ({ recipient, recipientAvatar }: { recipient: string, recipientAvat
       })
       .catch((err) => console.error("Error fetching chat history:", err));
 
-    // ✅ WebSocket setup
     const socket = new WebSocket(`ws://localhost:3001?userId=${userId}`);
 
     socket.onmessage = (event) => {
       try {
         const receivedMessage: Message = JSON.parse(event.data);
         if (
-          (receivedMessage.sender === userId && receivedMessage.receiver === recipient) ||
-          (receivedMessage.sender === recipient && receivedMessage.receiver === userId)
+          (receivedMessage.sender === userId &&
+            receivedMessage.receiver === recipient) ||
+          (receivedMessage.sender === recipient &&
+            receivedMessage.receiver === userId)
         ) {
           setMessages((prev) => [...prev, receivedMessage]);
           scrollToBottom();
@@ -72,7 +88,6 @@ const Chat = ({ recipient, recipientAvatar }: { recipient: string, recipientAvat
     };
   }, [recipient, userId]);
 
-  // ✅ Scroll to bottom on new message
   const scrollToBottom = () => {
     setTimeout(() => {
       chatContainerRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -89,19 +104,16 @@ const Chat = ({ recipient, recipientAvatar }: { recipient: string, recipientAvat
       timestamp: new Date().toISOString(),
     };
 
-    // Optimistically update UI
     setMessages((prev) => [...prev, message]);
     setNewMessage("");
     scrollToBottom();
 
-    // Send message via WebSocket
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
     } else {
       console.error("WebSocket is not open.");
     }
 
-    // Save message via API
     try {
       const res = await fetch("/api/messages", {
         method: "POST",
@@ -124,13 +136,18 @@ const Chat = ({ recipient, recipientAvatar }: { recipient: string, recipientAvat
       flexDirection="column"
       h="100vh"
       w="100%"
-      bg="gray.900"
-      color="white"
+      bg={bgColor}
+      color={useColorModeValue("gray.800", "white")}
+      borderRadius="lg"
+      overflow="hidden"
+      shadow="lg"
     >
       {/* Chat Header */}
-      <HStack bg="gray.800" p={4} borderBottom="1px solid gray" spacing={4}>
-        <Avatar name={recipient} src={recipientAvatar} />
-        <Text fontWeight="bold">{recipient}</Text>
+      <HStack bg={chatBg} p={4} borderBottomWidth={1} shadow="sm" spacing={4}>
+        <Avatar name={recipientName} src={recipientAvatar} />
+        <Text fontWeight="bold" fontSize="lg">
+          {recipientName}
+        </Text>
       </HStack>
 
       {/* Messages */}
@@ -141,49 +158,49 @@ const Chat = ({ recipient, recipientAvatar }: { recipient: string, recipientAvat
         overflowY="auto"
         align="stretch"
         css={{
-          "&::-webkit-scrollbar": {
-            width: "5px",
-          },
+          "&::-webkit-scrollbar": { width: "6px" },
           "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
             borderRadius: "10px",
           },
         }}
       >
         {messages.map((msg, i) => (
-          <Flex
+          <MotionBox
             key={i}
-            justify={msg.sender === userId ? "flex-end" : "flex-start"}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            alignSelf={msg.sender === userId ? "flex-end" : "flex-start"}
           >
             <Box
-              bg={msg.sender === userId ? "blue.500" : "gray.700"}
+              bg={msg.sender === userId ? messageBg : receivedBg}
               color="white"
               px={4}
               py={2}
               borderRadius="lg"
-              maxW="75%"
+              shadow="md"
             >
               <Text fontSize="sm">{msg.message}</Text>
               <Text fontSize="xs" textAlign="right" opacity={0.7}>
                 {new Date(msg.timestamp).toLocaleTimeString()}
               </Text>
             </Box>
-          </Flex>
+          </MotionBox>
         ))}
         <div ref={chatContainerRef} />
       </VStack>
 
       {/* Chat Input */}
-      <Box bg="gray.800" p={4} borderTop="1px solid gray">
+      <Box bg={chatBg} p={4} borderTopWidth={1} shadow="sm">
         <HStack>
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
-            bg="gray.700"
+            bg={useColorModeValue("gray.200", "gray.700")}
             borderRadius="full"
-            color="white"
-            _placeholder={{ color: "gray.400" }}
+            _focus={{ borderColor: "blue.500", bg: useColorModeValue("white", "gray.600") }}
           />
           <IconButton
             aria-label="Send message"
