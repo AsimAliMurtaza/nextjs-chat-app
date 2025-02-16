@@ -35,9 +35,9 @@ export default function LoginPage() {
   const toast = useToast();
   const { colorMode, toggleColorMode } = useColorMode();
 
-  // 🔥 Color Mode Responsive Styling
-  const bgColor = useColorModeValue("linear(to-br, #E0F7FA, #F3E5F5)", "gray.900");
-  const cardBgColor = useColorModeValue("white", "gray.900");
+  // 🔥 Dynamic Theme Styling
+  const bgColor = useColorModeValue("linear(to-br, #E3F2FD, #FCE4EC)", "gray.900");
+  const cardBgColor = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.700", "gray.200");
   const inputBgColor = useColorModeValue("white", "gray.700");
   const buttonBgColor = useColorModeValue("blue.500", "blue.400");
@@ -57,8 +57,7 @@ export default function LoginPage() {
     const res = await signIn("credentials", {
       email,
       password,
-      redirect: true,
-      callbackUrl: "/",
+      redirect: false, // 👈 Change to false to handle redirect manually
     });
 
     setLoading(false);
@@ -67,20 +66,21 @@ export default function LoginPage() {
       setError("Invalid email or password. Please try again.");
       toast({
         title: "Login Failed",
-        description: "Invalid email or password.",
+        description: "Invalid credentials. Try again!",
         status: "error",
         duration: 5000,
         isClosable: true,
       });
-    } else if (res?.ok) {
-      router.push("/dashboard");
+    } else {
       toast({
         title: "Login Successful",
-        description: "Welcome back!",
+        description: "Redirecting to chat...",
         status: "success",
-        duration: 3000,
+        duration: 2000,
         isClosable: true,
       });
+
+      router.push("/"); // 👈 Redirect to the chat page
     }
   };
 
@@ -94,7 +94,6 @@ export default function LoginPage() {
             overflow="hidden"
             direction={{ base: "column", md: "row" }}
             w="auto"
-            h="60%"
             borderRadius="20px"
             position="relative"
           >
@@ -110,7 +109,7 @@ export default function LoginPage() {
               _hover={{ bg: "gray.300", _dark: { bg: "gray.600" } }}
             />
 
-            {/* Left Section */}
+            {/* Left Section (Welcome Panel) */}
             <Box
               flex={1}
               bgGradient={bgColor}
@@ -126,18 +125,18 @@ export default function LoginPage() {
                 Welcome to
               </Heading>
               <Heading size="2xl" fontWeight="thin" mb={4}>
-                Cognivia
+                ChatSphere 🚀
               </Heading>
-              <Text fontSize="md">Sign in to continue or...</Text>
+              <Text fontSize="md">Sign in to start chatting instantly!</Text>
               <Button color="blue.500" _hover={{ color: "blue.900" }} onClick={() => router.push("/")}>
                 <FiArrowLeft style={{ marginRight: "8px", marginBottom: "2px", fontSize: "2em" }} />
               </Button>
             </Box>
 
-            {/* Right Section */}
+            {/* Right Section (Login Form) */}
             <Box flex={1} p={8}>
               <Heading size="md" fontWeight="lg" mb={6} color={textColor}>
-                Sign in to your account
+                Sign in to ChatSphere
               </Heading>
               <VStack spacing={4} align="stretch">
                 <FormControl id="signIn-email" isRequired>
@@ -189,10 +188,9 @@ export default function LoginPage() {
                     variant="outline"
                     color="blue.500"
                     w="full"
-                    border="1px solid"
                     leftIcon={<FcGoogle />}
                     _hover={{ bg: "gray.50", _dark: { bg: "gray.700" } }}
-                    onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                    onClick={() => signIn("google", { callbackUrl: "/chat" })}
                   >
                     Continue with Google
                   </Button>
@@ -203,7 +201,7 @@ export default function LoginPage() {
                     leftIcon={<FaGithub />}
                     _hover={{ bg: "gray.50", _dark: { bg: "gray.700" } }}
                     border="1px solid"
-                    onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+                    onClick={() => signIn("github", { callbackUrl: "/chat" })}
                   >
                     Continue with GitHub
                   </Button>

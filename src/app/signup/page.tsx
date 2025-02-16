@@ -32,10 +32,7 @@ export default function SignUpPage() {
   const toast = useToast();
 
   const { colorMode, toggleColorMode } = useColorMode();
-  const bgColor = useColorModeValue(
-    "linear(to-br, #E0F7FA, #F3E5F5)",
-    "gray.800"
-  );
+  const bgColor = useColorModeValue("linear(to-br, #E0F7FA, #F3E5F5)", "gray.800");
   const boxColor = useColorModeValue("white", "gray.900");
   const textColor = useColorModeValue("gray.700", "gray.200");
   const buttonHoverColor = useColorModeValue("blue.900", "blue.300");
@@ -79,57 +76,24 @@ export default function SignUpPage() {
   };
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      height="100vh"
-      bgGradient={bgColor}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Box
-          bg={boxColor}
-          borderRadius="20px"
-          boxShadow="lg"
-          maxW="900px"
-          p={8}
-          w="auto"
-          h="auto"
-        >
+    <Box display="flex" justifyContent="center" alignItems="center" height="100vh" bgGradient={bgColor}>
+      <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <Box bg={boxColor} borderRadius="20px" boxShadow="lg" maxW="900px" p={8} w="auto" h="auto">
           <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={6}>
+            
             {/* Left Side Content */}
-            <GridItem
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="center"
-              textAlign="center"
-            >
+            <GridItem display="flex" flexDirection="column" alignItems="center" justifyContent="center" textAlign="center">
               <Heading size="lg" fontWeight="thin" color={textColor}>
                 Welcome to
               </Heading>
-              <Heading size="2xl" fontWeight="thin" color={textColor} mb={4}>
-                Cognivia
+              <Heading size="2xl" fontWeight="bold" color={textColor} mb={4}>
+                ChatSphere
               </Heading>
               <Text fontSize="sm" color={textColor} mt={4}>
-                Create an account to get started.
+                Create an account to start chatting in real-time!
               </Text>
-              <Button
-                color="blue.500"
-                _hover={{ color: buttonHoverColor }}
-                onClick={() => router.push("/")}
-              >
-                <FiArrowLeft
-                  style={{
-                    marginRight: "8px",
-                    marginBottom: "2px",
-                    fontSize: "2em",
-                  }}
-                />
+              <Button color="blue.500" _hover={{ color: buttonHoverColor }} onClick={() => router.push("/")}>
+                <FiArrowLeft style={{ marginRight: "8px", marginBottom: "2px", fontSize: "2em" }} />
               </Button>
             </GridItem>
 
@@ -156,11 +120,9 @@ export default function SignUpPage() {
                 </Heading>
 
                 <FormControl id="signUp-username" isRequired>
-                  <FormLabel fontSize="sm" color={textColor}>
-                    Username
-                  </FormLabel>
+                  <FormLabel fontSize="sm" color={textColor}>Username</FormLabel>
                   <Input
-                    type="email"
+                    type="text"
                     placeholder="Enter your username"
                     bg={inputBgColor}
                     color="black"
@@ -172,9 +134,7 @@ export default function SignUpPage() {
                 </FormControl>
 
                 <FormControl id="signUp-email" isRequired>
-                  <FormLabel fontSize="sm" color={textColor}>
-                    Email
-                  </FormLabel>
+                  <FormLabel fontSize="sm" color={textColor}>Email</FormLabel>
                   <Input
                     type="email"
                     placeholder="Enter your email"
@@ -188,9 +148,7 @@ export default function SignUpPage() {
                 </FormControl>
 
                 <FormControl id="signUp-password" isRequired>
-                  <FormLabel fontSize="sm" color={textColor}>
-                    Password
-                  </FormLabel>
+                  <FormLabel fontSize="sm" color={textColor}>Password</FormLabel>
                   <Input
                     type="password"
                     placeholder="Enter your password"
@@ -203,14 +161,7 @@ export default function SignUpPage() {
                   />
                 </FormControl>
 
-                <Button
-                  onClick={handleSignup}
-                  bg="blue.500"
-                  color="white"
-                  _hover={{ bg: "blue.600" }}
-                  isLoading={loading}
-                  w="full"
-                >
+                <Button onClick={handleSignup} bg="blue.500" color="white" _hover={{ bg: "blue.600" }} isLoading={loading} w="full">
                   Sign Up
                 </Button>
 
@@ -218,11 +169,7 @@ export default function SignUpPage() {
 
                 <Text fontSize="sm" textAlign="center" color={textColor}>
                   Already have an account?{" "}
-                  <Button
-                    variant="link"
-                    color="blue.500"
-                    onClick={() => router.push("/login")}
-                  >
+                  <Button variant="link" color="blue.500" onClick={() => router.push("/login")}>
                     Log in
                   </Button>
                 </Text>
