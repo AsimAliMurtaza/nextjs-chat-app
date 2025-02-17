@@ -56,11 +56,10 @@ export default function ChatList() {
   const [newContact, setNewContact] = useState("");
 
   // Theme-aware colors
-  const bgColor = useColorModeValue("white", "black");
-  const cardBg = useColorModeValue("white", "black");
+  const bgColor = useColorModeValue("white", "whiteAlpha.300");
+  const cardBg = useColorModeValue("white", "gray.700");
   const textColor = useColorModeValue("gray.800", "gray.100");
-  const highlightBg = useColorModeValue("gray.100", "blue.700");
-  const borderColor = useColorModeValue("gray.100", "gray.600");
+  const highlightBg = useColorModeValue("gray.100", "whiteAlpha.200");
 
   // Fetch Contacts
   useEffect(() => {
@@ -141,13 +140,12 @@ export default function ChatList() {
       minH="100vh"
       bg={bgColor}
       color={textColor}
-      borderColor={borderColor}
       overflow="hidden"
       display="flex"
       flexDirection="column"
     >
       {/* ✅ Sidebar Header */}
-      <Flex justify="space-between" align="center" p={2}>
+      <Flex justify="space-between" align="center" p={2} h={24}>
         <AnimatePresence>
           {sidebarOpen && (
             <motion.div
@@ -157,8 +155,8 @@ export default function ChatList() {
               transition={{ duration: 0.2 }}
             >
               <Text
-                fontSize="2xl"
-                fontWeight="normal"
+                fontSize="xl"
+                fontWeight="bold"
                 bg={textColor}
                 bgClip="text"
               >
@@ -181,7 +179,7 @@ export default function ChatList() {
       </Flex>
 
       {/* ✅ Contact List */}
-      <VStack spacing={0} align="stretch" flex="1">
+      <VStack spacing={1} align="stretch" flex="1">
         {contacts.map((user) => (
           <Tooltip
             label={user.username}
@@ -191,8 +189,10 @@ export default function ChatList() {
             key={user._id}
           >
             <MotionBox
-              p={sidebarOpen ? 2 : 2}
-              bg={pathname === `/conversations/${user._id}` ? highlightBg : cardBg}
+              p={2}
+              bg={
+                pathname === `/conversations/${user._id}` ? highlightBg : cardBg
+              }
               cursor="pointer"
               whileHover={{ scale: 1.01 }}
               display="flex"
@@ -200,10 +200,14 @@ export default function ChatList() {
               justifyContent="space-between"
               onClick={() =>
                 router.push(
-                  `/conversations/${user._id}?name=${encodeURIComponent(user.username)}`
+                  `/conversations/${user._id}?name=${encodeURIComponent(
+                    user.username
+                  )}`
                 )
               }
               w="full"
+              borderRadius="md"
+              boxShadow="sm"
             >
               <HStack spacing={3} w="full">
                 <Avatar
@@ -217,7 +221,7 @@ export default function ChatList() {
                   style={{ width: "100%" }}
                 >
                   <HStack justify="space-between" w="full">
-                    <Text fontSize="lg" fontWeight="normal">
+                    <Text fontSize="md" fontWeight="medium">
                       {user.username}
                     </Text>
                     {user.isOnline && (
@@ -236,7 +240,7 @@ export default function ChatList() {
       {/* ✅ Add Contact Button */}
       <Collapse in={sidebarOpen} animateOpacity>
         <HStack
-          p={3}
+          p={2}
           display="flex"
           justifyContent="right"
           borderRadius="md"
@@ -255,10 +259,11 @@ export default function ChatList() {
           </MotionButton>
         </HStack>
       </Collapse>
+
       {/* ✅ Modal for Adding Contact */}
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
-        <ModalContent bg="gray.900" color="white">
+        <ModalContent bg={bgColor} color={textColor}>
           <ModalHeader>Add New Contact</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -266,8 +271,8 @@ export default function ChatList() {
               placeholder="Enter contact email..."
               value={newContact}
               onChange={(e) => setNewContact(e.target.value)}
-              bg="gray.800"
-              color="white"
+              bg={cardBg}
+              color={textColor}
               _placeholder={{ color: "gray.500" }}
             />
           </ModalBody>

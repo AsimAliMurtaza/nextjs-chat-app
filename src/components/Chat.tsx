@@ -82,8 +82,8 @@ const Chat = ({
 
   const userId = session?.user?.id as string | undefined;
 
-  const bgColor = useColorModeValue("white", "black");
-  const chatBg = useColorModeValue("gray.100", "black");
+  const bgColor = useColorModeValue("white", "whiteAlpha.200");
+  const chatBg = useColorModeValue("gray.100", "whiteAlpha.200");
   const messageBg = useColorModeValue("blue.500", "blue.400");
   const receivedBg = useColorModeValue("gray.700", "gray.600");
 
@@ -224,7 +224,7 @@ const Chat = ({
       transition={{ duration: 0.5 }}
     >
       {/* Chat Header */}
-      <HStack bg={chatBg} p={4} shadow="sm" spacing={4}>
+      <HStack zIndex={100} p={4} shadow="md" spacing={4}>
         <Avatar name={recipientName} src={recipientAvatar} />
         <Text fontWeight="normal" fontSize="xl">
           {recipientName}
