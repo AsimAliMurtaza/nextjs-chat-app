@@ -1,39 +1,28 @@
+// app/ChatList.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Box,
   VStack,
   HStack,
-  Avatar,
-  Text,
-  Button,
-  IconButton,
   useToast,
   useColorModeValue,
-  useColorMode,
-  Flex,
-  Tooltip,
-  Collapse,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Input,
   useDisclosure,
+  Collapse,
+  useColorMode,
+  Button,
 } from "@chakra-ui/react";
-import { FaBars, FaSignOutAlt, FaMoon, FaSun, FaPlus } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { FaPlus } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { SidebarHeader } from "../components/ui/SidebarHeader";
+import { ContactItem } from "../components/ui/ContactItem";
+import { AddContactModal } from "../components/ui/AddContactModal";
+import { BottomActions } from "../components/ui/BottomActions";
 
-// Motion Wrapper for Smooth Animations
 const MotionBox = motion(Box);
-const MotionButton = motion(Button);
-const MotionIconButton = motion(IconButton);
 
 interface User {
   _id: string;
@@ -144,169 +133,59 @@ export default function ChatList() {
       display="flex"
       flexDirection="column"
     >
-      {/* ✅ Sidebar Header */}
-      <Flex justify="space-between" align="center" p={2} h={24}>
-        <AnimatePresence>
-          {sidebarOpen && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Text
-                fontSize="xl"
-                fontWeight="bold"
-                bg={textColor}
-                bgClip="text"
-              >
-                Messages
-              </Text>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Sidebar Header */}
+      <SidebarHeader
+        sidebarOpen={sidebarOpen}
+        toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        textColor={textColor}
+      />
 
-        <MotionIconButton
-          icon={<FaBars />}
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label="Toggle Sidebar"
-          variant="ghost"
-          fontSize="md"
-          borderRadius="full"
-          animate={{ rotate: sidebarOpen ? 0 : 180 }}
-          transition={{ duration: 0.3 }}
-        />
-      </Flex>
-
-      {/* ✅ Contact List */}
+      {/* Contact List */}
       <VStack spacing={1} align="stretch" flex="1">
         {contacts.map((user) => (
-          <Tooltip
-            label={user.username}
-            placement="right"
-            hasArrow
-            isDisabled={sidebarOpen}
+          <ContactItem
             key={user._id}
-          >
-            <MotionBox
-              p={2}
-              bg={
-                pathname === `/conversations/${user._id}` ? highlightBg : cardBg
-              }
-              cursor="pointer"
-              whileHover={{ scale: 1.01 }}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              onClick={() =>
-                router.push(
-                  `/conversations/${user._id}?name=${encodeURIComponent(
-                    user.username
-                  )}`
-                )
-              }
-              w="full"
-              borderRadius="md"
-              boxShadow="sm"
-            >
-              <HStack spacing={3} w="full">
-                <Avatar
-                  name={user.username}
-                  src={user.avatar || ""}
-                  size={sidebarOpen ? "md" : "sm"}
-                />
-                <Collapse
-                  in={sidebarOpen}
-                  animateOpacity
-                  style={{ width: "100%" }}
-                >
-                  <HStack justify="space-between" w="full">
-                    <Text fontSize="md" fontWeight="medium">
-                      {user.username}
-                    </Text>
-                    {user.isOnline && (
-                      <Text fontSize="xs" color="green.400">
-                        Online
-                      </Text>
-                    )}
-                  </HStack>
-                </Collapse>
-              </HStack>
-            </MotionBox>
-          </Tooltip>
+            user={user}
+            sidebarOpen={sidebarOpen}
+            isActive={pathname === `/conversations/${user._id}`}
+            highlightBg={highlightBg}
+            cardBg={cardBg}
+          />
         ))}
       </VStack>
 
-      {/* ✅ Add Contact Button */}
+      {/* Add Contact Button */}
       <Collapse in={sidebarOpen} animateOpacity>
-        <HStack
-          p={2}
-          display="flex"
-          justifyContent="right"
-          borderRadius="md"
-          mx={2}
-          mb={2}
-        >
-          <MotionButton
+        <HStack p={2} justifyContent="right" borderRadius="md" mx={2} mb={2}>
+          <Button
             leftIcon={<FaPlus />}
             size="sm"
             onClick={onOpen}
             variant="outline"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
           >
             Add Contact
-          </MotionButton>
+          </Button>
         </HStack>
       </Collapse>
 
-      {/* ✅ Modal for Adding Contact */}
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent bg={bgColor} color={textColor}>
-          <ModalHeader>Add New Contact</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Input
-              placeholder="Enter contact email..."
-              value={newContact}
-              onChange={(e) => setNewContact(e.target.value)}
-              bg={cardBg}
-              color={textColor}
-              _placeholder={{ color: "gray.500" }}
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="gray" mr={3} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button colorScheme="blue" onClick={addContact}>
-              Add Contact
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* Add Contact Modal */}
+      <AddContactModal
+        isOpen={isOpen}
+        onClose={onClose}
+        newContact={newContact}
+        setNewContact={setNewContact}
+        addContact={addContact}
+        bgColor={bgColor}
+        textColor={textColor}
+        cardBg={cardBg}
+      />
 
-      {/* ✅ Bottom Actions */}
-      <Flex justify="space-between" p={2}>
-        <MotionIconButton
-          icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
-          onClick={toggleColorMode}
-          aria-label="Toggle Theme"
-          variant="ghost"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        />
-        {sidebarOpen && (
-          <MotionButton
-            leftIcon={<FaSignOutAlt />}
-            size="sm"
-            onClick={() => signOut()}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          />
-        )}
-      </Flex>
+      {/* Bottom Actions */}
+      <BottomActions
+        sidebarOpen={sidebarOpen}
+        colorMode={colorMode}
+        toggleColorMode={toggleColorMode}
+      />
     </MotionBox>
   );
 }

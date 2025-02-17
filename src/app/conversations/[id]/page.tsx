@@ -2,7 +2,7 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { Box } from "@chakra-ui/react";
-import Chat from "@/components/Chat";
+import Chat from "@/components/ChatWindow";
 
 const ChatPage = () => {
   const { id } = useParams<{ id: string }>();
