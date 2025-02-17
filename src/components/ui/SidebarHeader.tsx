@@ -27,7 +27,13 @@ export const SidebarHeader = ({
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            <Text fontSize="xl" fontWeight="bold" bg={textColor} bgClip="text">
+            <Text
+              fontSize="2xl"
+              pl="2"
+              fontWeight="semibold"
+              bg={textColor}
+              bgClip="text"
+            >
               Messages
             </Text>
           </motion.div>

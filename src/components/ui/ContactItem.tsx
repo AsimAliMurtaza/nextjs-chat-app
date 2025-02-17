@@ -38,7 +38,6 @@ export const ContactItem = ({
         p={2}
         bg={isActive ? highlightBg : cardBg}
         cursor="pointer"
-        whileHover={{ scale: 1.01 }}
         display="flex"
         alignItems="center"
         justifyContent="space-between"
@@ -50,10 +49,11 @@ export const ContactItem = ({
           )
         }
         w="full"
-        borderRadius="md"
         boxShadow="sm"
+        borderLeft="3px solid"
+        borderLeftColor={isActive ? "blue.400" : "transparent"}
       >
-        <HStack spacing={3} w="full">
+        <HStack spacing={4} p={1} w="full">
           <Avatar
             name={user.username}
             src={user.avatar || ""}

@@ -52,7 +52,7 @@ export const MessageItem = ({
         color="white"
         px={4}
         py={2}
-        borderRadius="lg"
+        borderRadius="2xl"
         position="relative"
       >
         {/* File Attachments */}
@@ -83,8 +83,8 @@ export const MessageItem = ({
         <Box
           position="absolute"
           top="50%"
-          right={message.sender === userId ? "-10px" : "unset"}
-          left={message.sender !== userId ? "2px" : "unset"}
+          right={message.sender === userId ? "-8px" : "unset"}
+          left={message.sender !== userId ? "4px" : "unset"}
         >
           <Menu>
             <MenuButton

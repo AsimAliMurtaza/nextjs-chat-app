@@ -45,7 +45,7 @@ export default function ChatList() {
   const [newContact, setNewContact] = useState("");
 
   // Theme-aware colors
-  const bgColor = useColorModeValue("white", "whiteAlpha.300");
+  const bgColor = useColorModeValue("white", "#2C2C2C");
   const cardBg = useColorModeValue("white", "gray.700");
   const textColor = useColorModeValue("gray.800", "gray.100");
   const highlightBg = useColorModeValue("gray.100", "whiteAlpha.200");
@@ -124,7 +124,7 @@ export default function ChatList() {
   return (
     <MotionBox
       as={motion.div}
-      animate={{ width: sidebarOpen ? "240px" : "50px" }}
+      animate={{ width: sidebarOpen ? "300px" : "56px" }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       minH="100vh"
       bg={bgColor}

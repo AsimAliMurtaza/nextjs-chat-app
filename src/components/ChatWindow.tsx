@@ -50,10 +50,9 @@ export default function Chat({
 
   const userId = session?.user?.id as string | undefined;
 
-  const bgColor = useColorModeValue("white", "whiteAlpha.200");
-  const chatBg = useColorModeValue("gray.100", "whiteAlpha.200");
+  const bgColor = useColorModeValue("white", "#242424");
   const messageBg = useColorModeValue("blue.500", "blue.400");
-  const receivedBg = useColorModeValue("gray.700", "gray.600");
+  const receivedBg = useColorModeValue("green.400", "#3f3f3f");
 
   useEffect(() => {
     if (!userId || !recipient) return;
@@ -226,7 +225,6 @@ export default function Chat({
         showEmojiPicker={showEmojiPicker}
         setShowEmojiPicker={setShowEmojiPicker}
         handleFileChange={handleFileChange}
-        chatBg={chatBg}
       />
 
       {/* Delete Confirmation Dialog */}

@@ -14,7 +14,6 @@ interface ChatInputProps {
   showEmojiPicker: boolean;
   setShowEmojiPicker: (value: boolean) => void;
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  chatBg: string;
 }
 
 export const ChatInput = ({
@@ -24,10 +23,15 @@ export const ChatInput = ({
   showEmojiPicker,
   setShowEmojiPicker,
   handleFileChange,
-  chatBg,
 }: ChatInputProps) => {
   return (
-    <Box bg={chatBg} p={4} shadow="sm" position="relative">
+    <Box 
+      bg="transparent"  // Transparent background
+      backdropFilter="blur(10px)"  // Subtle glass effect
+      p={4} 
+      shadow="sm" 
+      position="relative"
+    >
       {showEmojiPicker && (
         <Box position="absolute" bottom="60px" left="10px" zIndex="10">
           <EmojiPicker
@@ -35,14 +39,20 @@ export const ChatInput = ({
           />
         </Box>
       )}
+
       <Flex direction={{ base: "column", md: "row" }} align="center" gap={2}>
         <HStack flex="1" w="full">
+          {/* Emoji Button */}
           <IconButton
             icon={<FaSmile />}
             aria-label="Emoji Picker"
-            borderRadius={100}
+            borderRadius="full"
+            bg="rgba(255, 255, 255, 0.1)"  // Semi-transparent buttons
+            _hover={{ bg: "rgba(255, 255, 255, 0.2)" }}
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
           />
+
+          {/* File Upload */}
           <Input
             type="file"
             display="none"
@@ -52,17 +62,27 @@ export const ChatInput = ({
           <IconButton
             icon={<FaPaperclip />}
             aria-label="Attach File"
-            borderRadius={100}
+            borderRadius="full"
+            bg="rgba(255, 255, 255, 0.1)"
+            _hover={{ bg: "rgba(255, 255, 255, 0.2)" }}
             onClick={() => document.getElementById("file-upload")?.click()}
           />
+
+          {/* Chat Input Field */}
           <MotionInput
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Message"
+            placeholder="Type a message..."
             borderRadius="full"
             flex="1"
+            bg="rgba(255, 255, 255, 0.1)"  // Subtle transparent input field
+            color="white"
+            _placeholder={{ color: "gray.300" }}
+            _focus={{ bg: "rgba(255, 255, 255, 0.2)", borderColor: "green.300" }}
           />
         </HStack>
+
+        {/* Send Button */}
         <MotionButton
           icon={<FaPaperPlane />}
           colorScheme="green"

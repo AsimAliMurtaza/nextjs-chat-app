@@ -27,14 +27,16 @@ export const BottomActions = ({
         variant="ghost"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
+        borderRadius={"full"}
       />
       {sidebarOpen && (
-        <MotionButton
-          leftIcon={<FaSignOutAlt />}
+        <MotionIconButton
+          icon={<FaSignOutAlt />}
           size="sm"
           onClick={() => signOut()}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
+          borderRadius={"full"}
         />
       )}
     </Flex>
