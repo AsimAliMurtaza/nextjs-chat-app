@@ -36,7 +36,10 @@ export default function LoginPage() {
   const { colorMode, toggleColorMode } = useColorMode();
 
   // 🔥 Dynamic Theme Styling
-  const bgColor = useColorModeValue("linear(to-br, #E3F2FD, #FCE4EC)", "gray.900");
+  const bgColor = useColorModeValue(
+    "linear(to-br, #E3F2FD, #FCE4EC)",
+    "gray.900"
+  );
   const cardBgColor = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.700", "gray.200");
   const inputBgColor = useColorModeValue("white", "gray.700");
@@ -86,15 +89,17 @@ export default function LoginPage() {
 
   return (
     <Flex justify="center" align="center" minH="100vh" bgGradient={bgColor}>
-      <Container maxW="2xl">
-        <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <Container maxW="4xl" centerContent>
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <Flex
-            bg={cardBgColor}
-            boxShadow="lg"
             overflow="hidden"
             direction={{ base: "column", md: "row" }}
-            w="auto"
-            borderRadius="20px"
+            w="100%"
+            maxW="800px"
             position="relative"
           >
             {/* 🌗 Dark Mode Toggle Button */}
@@ -120,21 +125,38 @@ export default function LoginPage() {
               alignItems="center"
               textAlign="center"
               color={textColor}
+              borderRadius={{ base: "20px 20px 0 0", md: "20px 0 0 20px" }}
             >
-              <Heading size="lg" fontWeight="thin">
+              <Heading size="lg" fontWeight="thin" color={textColor}>
                 Welcome to
               </Heading>
-              <Heading size="2xl" fontWeight="thin" mb={4}>
-                ChatSphere 🚀
+              <Heading size="2xl" fontWeight="bold" color={textColor} mb={4}>
+                ChatSphere
               </Heading>
               <Text fontSize="md">Sign in to start chatting instantly!</Text>
-              <Button color="blue.500" _hover={{ color: "blue.900" }} onClick={() => router.push("/")}>
-                <FiArrowLeft style={{ marginRight: "8px", marginBottom: "2px", fontSize: "2em" }} />
+              <Button
+                color="blue.500"
+                _hover={{ color: "blue.900" }}
+                onClick={() => router.push("/")}
+              >
+                <FiArrowLeft
+                  style={{
+                    marginRight: "8px",
+                    marginBottom: "2px",
+                    fontSize: "2em",
+                  }}
+                />
               </Button>
             </Box>
 
             {/* Right Section (Login Form) */}
-            <Box flex={1} p={8}>
+            <Box
+              flex={1}
+              p={8}
+              border="1px solid"
+              borderColor="gray.300"
+              borderRadius="20px"
+            >
               <Heading size="md" fontWeight="lg" mb={6} color={textColor}>
                 Sign in to ChatSphere
               </Heading>
@@ -171,13 +193,30 @@ export default function LoginPage() {
                   />
                 </FormControl>
 
-                {error && <FormHelperText color="red.500" textAlign="center">{error}</FormHelperText>}
+                {error && (
+                  <FormHelperText color="red.500" textAlign="center">
+                    {error}
+                  </FormHelperText>
+                )}
 
-                <Button onClick={handleLogin} bg={buttonBgColor} _hover={{ bg: buttonHoverColor }} isLoading={loading} w="full" size="md">
+                <Button
+                  onClick={handleLogin}
+                  bg={buttonBgColor}
+                  _hover={{ bg: buttonHoverColor }}
+                  isLoading={loading}
+                  w="full"
+                  size="md"
+                >
                   Login
                 </Button>
 
-                <Text fontSize="sm" color="blue.500" cursor="pointer" textAlign="center" _hover={{ textDecoration: "underline" }}>
+                <Text
+                  fontSize="sm"
+                  color="blue.500"
+                  cursor="pointer"
+                  textAlign="center"
+                  _hover={{ textDecoration: "underline" }}
+                >
                   Forgot password?
                 </Text>
 
@@ -209,7 +248,12 @@ export default function LoginPage() {
 
                 <Text fontSize="sm" mt={6} textAlign="center" color={textColor}>
                   Don&apos;t have an account?{" "}
-                  <Button variant="link" color="blue.500" _hover={{ textDecoration: "underline" }} onClick={() => router.push("/signup")}>
+                  <Button
+                    variant="link"
+                    color="blue.500"
+                    _hover={{ textDecoration: "underline" }}
+                    onClick={() => router.push("/signup")}
+                  >
                     Create one
                   </Button>
                 </Text>
