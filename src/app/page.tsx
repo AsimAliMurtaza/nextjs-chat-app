@@ -24,7 +24,8 @@ export default function HomePage() {
   const { data: session, status } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const bgColor = useColorModeValue("gray.50", "black");
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+  const chatListBg = useColorModeValue("white", "gray.800");
   const router = useRouter();
 
   // Fetch users after authentication
@@ -46,7 +47,7 @@ export default function HomePage() {
     }
   }, [session, status, router]);
 
-  // **Loading Screen with Windows 10-Style Spinner**
+  // **Loading Screen with Modern Spinner**
   if (isLoading || status === "loading") {
     return (
       <Flex
@@ -62,9 +63,9 @@ export default function HomePage() {
         </Text>
         <Spinner
           thickness="4px"
-          speed="0.8s"
+          speed="0.6s"
           emptyColor="gray.200"
-          color="green.500"
+          color="green.400"
           size="xl"
         />
       </Flex>
@@ -78,7 +79,14 @@ export default function HomePage() {
       transition="opacity 0.3s ease-in-out"
     >
       {/* Sidebar - Chat List */}
-      <Box w={{ base: "100%", md: "auto" }} maxW="300px">
+      <Box
+        w={{ base: "100%", md: "220px" , lg: "260px" }} // Adjusts for responsiveness
+        bg={chatListBg}
+        boxShadow="lg"
+        borderRadius={{ base: "none", md: "xl" }} // Rounded corners on larger screens
+        p={4}
+        overflowY="auto"
+      >
         <ChatList />
       </Box>
 
@@ -89,8 +97,11 @@ export default function HomePage() {
         alignItems="center"
         justifyContent="center"
         bg={bgColor}
+        borderRadius={{ base: "none", md: "xl" }} // Matches rounded corners of chat list
+        p={4}
+        textAlign="center"
       >
-        <Text fontSize="xl" color="gray.400">
+        <Text fontSize={{ base: "md", md: "xl" }} color="gray.400">
           Select a chat to start messaging
         </Text>
       </Box>

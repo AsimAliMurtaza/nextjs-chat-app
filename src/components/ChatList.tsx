@@ -157,12 +157,12 @@ export default function ChatList() {
               transition={{ duration: 0.2 }}
             >
               <Text
-                fontSize="xl"
-                fontWeight="bold"
-                bgGradient="linear(to-r, blue.400, purple.400)"
+                fontSize="2xl"
+                fontWeight="normal"
+                bg={textColor}
                 bgClip="text"
               >
-                NotWhatsApp
+                Messages
               </Text>
             </motion.div>
           )}
@@ -192,7 +192,7 @@ export default function ChatList() {
           >
             <MotionBox
               p={sidebarOpen ? 2 : 2}
-              bg={pathname === `/chat/${user._id}` ? highlightBg : cardBg}
+              bg={pathname === `/conversations/${user._id}` ? highlightBg : cardBg}
               cursor="pointer"
               whileHover={{ scale: 1.01 }}
               display="flex"
@@ -200,7 +200,7 @@ export default function ChatList() {
               justifyContent="space-between"
               onClick={() =>
                 router.push(
-                  `/chat/${user._id}?name=${encodeURIComponent(user.username)}`
+                  `/conversations/${user._id}?name=${encodeURIComponent(user.username)}`
                 )
               }
               w="full"
@@ -283,10 +283,7 @@ export default function ChatList() {
       </Modal>
 
       {/* ✅ Bottom Actions */}
-      <Flex
-        justify="space-between"
-        p={2}
-      >
+      <Flex justify="space-between" p={2}>
         <MotionIconButton
           icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
           onClick={toggleColorMode}
