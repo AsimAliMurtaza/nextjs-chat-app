@@ -1,36 +1,49 @@
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
-import { Box, useBreakpointValue } from "@chakra-ui/react";
-import Chat from "@/components/ChatWindow";
+import {
+  Box,
+  useBreakpointValue,
+  Text,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import ChatList from "@/components/ChatList";
+import { ReactNode } from "react";
 
-const ChatPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const searchParams = useSearchParams();
-  const recipientName = searchParams.get("name") || "Unknown User";
+interface LayoutProps {
+  children: ReactNode;
+}
 
+const ChatLayout = ({ children }: LayoutProps) => {
   // Mobile & Desktop specific layout adjustments
+  const sidebarWidth = useBreakpointValue({ base: "100%", md: "0px" });
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
+  // Color mode adjustments for background colors
+  const bgColor = useColorModeValue("gray.50", "gray.800");
 
   return (
     <Box display="flex" minH="100vh">
       {/* Sidebar: Chat List */}
       <Box
+        bg={useColorModeValue("white", "gray.900")}
         color="white"
+        boxShadow={{ base: "none", md: "xl" }} // Shadow for desktop
+        height="100vh"
       >
         <ChatList />
       </Box>
 
       {/* Main Content: Chat */}
-      <Box flex="1">
-        {id ? (
-          <Chat recipient={id} recipientName={recipientName} />
-        ) : (
-          <Box>Select a chat from the list</Box>
-        )}
+      <Box
+        flex="1"
+        bg={bgColor}
+        marginLeft={{ base: 0, md: sidebarWidth }} // Avoid overlapping content on desktop
+      >
+        {children}
       </Box>
     </Box>
   );
 };
 
-export default ChatPage;
+export default ChatLayout;

@@ -3,6 +3,7 @@ import { Flex, IconButton, Button } from "@chakra-ui/react";
 import { FaMoon, FaSun, FaSignOutAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { signOut } from "next-auth/react";
+import { redirect } from "next/dist/server/api-utils";
 
 const MotionIconButton = motion(IconButton);
 const MotionButton = motion(Button);
@@ -33,7 +34,7 @@ export const BottomActions = ({
         <MotionIconButton
           icon={<FaSignOutAlt />}
           size="sm"
-          onClick={() => signOut()}
+          onClick={() => signOut({ callbackUrl: "/" })}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           borderRadius={"full"}
