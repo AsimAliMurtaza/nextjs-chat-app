@@ -147,7 +147,7 @@ export default function ChatList() {
             key={user._id}
             user={user}
             sidebarOpen={sidebarOpen}
-            isActive={pathname === `/conversations/${user._id}`}
+            isActive={pathname === `/web/conversations/${user._id}`}
             highlightBg={highlightBg}
             cardBg={cardBg}
           />

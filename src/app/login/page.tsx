@@ -83,7 +83,7 @@ export default function LoginPage() {
         isClosable: true,
       });
 
-      router.push("/"); // 👈 Redirect to the chat page
+      router.push("/web/conversations"); // 👈 Redirect to the chat page
     }
   };
 

@@ -8,7 +8,7 @@ interface ChatHeaderProps {
 
 export const ChatHeader = ({ recipientName, recipientAvatar }: ChatHeaderProps) => {
   return (
-    <HStack zIndex={100} p={4} shadow="md" spacing={4}>
+    <HStack p={4} shadow="md" spacing={4}>
       <Avatar name={recipientName} src={recipientAvatar} />
       <Text fontWeight="normal" fontSize="xl">
         {recipientName}

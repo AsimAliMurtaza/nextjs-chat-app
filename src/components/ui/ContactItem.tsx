@@ -43,7 +43,7 @@ export const ContactItem = ({
         justifyContent="space-between"
         onClick={() =>
           router.push(
-            `/conversations/${user._id}?name=${encodeURIComponent(
+            `/web/conversations/${user._id}?name=${encodeURIComponent(
               user.username
             )}`
           )

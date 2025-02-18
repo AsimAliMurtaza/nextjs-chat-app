@@ -1,5 +1,4 @@
 "use client";
-
 import { useParams, useSearchParams } from "next/navigation";
 import { Box } from "@chakra-ui/react";
 import Chat from "@/components/ChatWindow";
