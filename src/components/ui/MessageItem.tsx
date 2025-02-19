@@ -1,4 +1,3 @@
-// components/MessageItem.tsx
 import {
   Box,
   Text,
@@ -8,10 +7,11 @@ import {
   MenuItem,
   IconButton,
   Image,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { FaEllipsisV } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { useDisclosure } from "@chakra-ui/react";
+import { useState } from "react";
 
 const MotionBox = motion(Box);
 
@@ -19,10 +19,12 @@ interface MessageItemProps {
   message: {
     _id: string;
     sender: string;
+    receiver: string;
     message: string;
     timestamp: string;
     file?: string;
     fileType?: string;
+    deletedBy: string[];
   };
   userId: string;
   messageBg: string;
@@ -38,6 +40,38 @@ export const MessageItem = ({
   onDelete,
 }: MessageItemProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isDeleted, setIsDeleted] = useState(false);
+
+  // Handle "Delete for Everyone" action
+  const handleDeleteForEveryone = async () => {
+    try {
+      const response = await fetch("/api/messages/deleteForEveryone", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messageId: message._id,
+          userId: userId,
+        }),
+      });
+
+      if (response.ok) {
+        // Set message as deleted in UI
+        setIsDeleted(true);
+        onDelete(message._id); // Optionally remove the message from the UI immediately
+      } else {
+        console.error("Failed to delete the message for everyone");
+      }
+    } catch (error) {
+      console.error("Error deleting message", error);
+    }
+  };
+
+  // Conditionally render message text based on deletion status
+  const renderMessageText = () => {
+    return message.message;
+  };
 
   return (
     <MotionBox
@@ -69,7 +103,7 @@ export const MessageItem = ({
         )}
 
         {/* Message Text */}
-        <Text fontSize="sm">{message.message}</Text>
+        <Text fontSize="sm">{renderMessageText()}</Text>
 
         {/* Timestamp */}
         <Text fontSize="xs" textAlign="right" opacity={0.7}>
@@ -95,16 +129,19 @@ export const MessageItem = ({
               size="xs"
             />
             <MenuList>
-              <MenuItem
-                color="red.400"
-                sx={{ borderRadius: "md" }}
-                onClick={() => {
-                  onDelete(message._id);
-                  onOpen();
-                }}
-              >
-                Delete
-              </MenuItem>
+              {/* Show delete option only for messages sent by the current user */}
+              {message.sender === userId && (
+                <MenuItem
+                  color="red.400"
+                  sx={{ borderRadius: "md" }}
+                  onClick={() => {
+                    handleDeleteForEveryone(); // Delete the message for everyone
+                    onOpen(); // Optionally, you can handle opening any modal
+                  }}
+                >
+                  Delete for Everyone
+                </MenuItem>
+              )}
             </MenuList>
           </Menu>
         </Box>

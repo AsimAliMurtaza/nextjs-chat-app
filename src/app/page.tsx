@@ -49,7 +49,7 @@ export default function HomePage() {
               bgGradient="linear(to-r, cyan.400, blue.500)"
               bgClip="text"
             >
-              Welcome to ChatVerse
+              Welcome to ChatSphere
             </Heading>
             <Text fontSize="lg" color="gray.300">
               Connect with friends instantly. Secure, fast, and real-time
